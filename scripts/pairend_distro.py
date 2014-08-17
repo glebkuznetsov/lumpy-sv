@@ -10,7 +10,6 @@
 
 import sys
 import numpy as np
-from operator import itemgetter
 from optparse import OptionParser
 
 parser = OptionParser()
@@ -63,14 +62,18 @@ for l in sys.stdin:
 
     A = l.rstrip().split('\t')
 
-    if ( ((int(A[1]) & required) == required) and \
-          (int(A[1]) & restricted == 0 ) and \
-          (int(A[8]) >= 0) ):
+    if (int(A[1]) & required == required and
+            int(A[1]) & restricted == 0 and
+            int(A[8]) >= 0):
         L.append(float(A[8]))
         c += 1
 
 mean = np.mean(L)
 stdev = np.std(L)
+
+# Require stdev to be at least 1.
+if stdev < 1:
+    stdev = 1
 
 start = options.read_length
 end = int(mean + options.X*stdev)
@@ -80,8 +83,7 @@ s = 0
 
 for i in range(c):
     if (L[i] >= start) and (L[i] <= end):
-        j = int(L[i] - start)
-        H[j] = H[ int(L[i] - start) ] + 1
+        H[int(L[i] - start)] += 1
         s += 1
 
 f = open(options.output_file, 'w')
